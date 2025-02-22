@@ -10,38 +10,25 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class Main extends JFrame implements KeyListener {
-	private char[][] nivel1;
+	private char[][] nivel;
 	private int jugadorX;
 	private int jugadorY;
+	private LaberintoService laberintoService;
 
 	public Main() {
+		laberintoService = new LaberintoService();
 		setTitle("Laberinto");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(1024, 800);
 		setVisible(true);
 		addKeyListener(this);
 
-		// Definimos el mapa del laberinto con intenciones de meter mas en un futuro o
-		// incluso hacerle procedural
-		nivel1 = new char[][] {
-				{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
-				{ '#', 'E', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#' },
-				{ '#', ' ', '#', '#', '#', ' ', '#', ' ', ' ', '#' },
-				{ '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#' },
-				{ '#', '#', '#', ' ', '#', ' ', '#', '#', '#', '#' },
-				{ '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#' },
-				{ '#', ' ', '#', '#', '#', ' ', '#', ' ', ' ', '#' },
-				{ '#', ' ', '#', 'S', '#', ' ', '#', ' ', '#', '#' },
-				{ '#', ' ', '#', ' ', '#', '#', '#', ' ', ' ', '#' },
-				{ '#', ' ', '#', ' ', '#', '#', '#', '#', ' ', '#' },
-				{ '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#' },
-				{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' }
-		};
+		nivel = laberintoService.generateFromFile();
 
 		// Inicializar la posición del jugador
-		for (int y = 0; y < nivel1.length; y++) {
-			for (int x = 0; x < nivel1[0].length; x++) {
-				if (nivel1[y][x] == 'E') {
+		for (int y = 0; y < nivel.length; y++) {
+			for (int x = 0; x < nivel[0].length; x++) {
+				if (nivel[y][x] == 'E') {
 					jugadorX = x;
 					jugadorY = y;
 					break;
@@ -55,16 +42,16 @@ public class Main extends JFrame implements KeyListener {
 		super.paint(g);
 		// Obtenemos la anchura y altura del mapa y lo dividimos equitativamente entre
 		// las casillas del laberinto para que quede uniforme
-		int anchoCasilla = getWidth() / nivel1[0].length;
-		int altoCasilla = getHeight() / nivel1.length;
+		int anchoCasilla = getWidth() / nivel[0].length;
+		int altoCasilla = getHeight() / nivel.length;
 
 		// Recorremos las casillas para pintarlas en pantalla segun el caracter que
 		// tenga
-		for (int y = 0; y < nivel1.length; y++) {
-			for (int x = 0; x < nivel1[0].length; x++) {
+		for (int y = 0; y < nivel.length; y++) {
+			for (int x = 0; x < nivel[0].length; x++) {
 
 				// obtenemos 1 a 1 las casillas
-				char casilla = nivel1[y][x];
+				char casilla = nivel[y][x];
 				// conseguimos las posiciones x, y de las mismas
 				int xPos = x * anchoCasilla;
 				int yPos = y * altoCasilla;
@@ -72,9 +59,6 @@ public class Main extends JFrame implements KeyListener {
 				// Dependiendo el caracter lo pintamos de 1 color y lo pintamos como cuadrado
 				if (casilla == '#') {
 					g.setColor(Color.BLACK);
-					g.fillRect(xPos, yPos, anchoCasilla, altoCasilla);
-				} else if (casilla == 'E') {
-					g.setColor(Color.GREEN);
 					g.fillRect(xPos, yPos, anchoCasilla, altoCasilla);
 				} else if (casilla == 'S') {
 					g.setColor(Color.RED);
@@ -107,23 +91,24 @@ public class Main extends JFrame implements KeyListener {
 			nuevaX++;
 		}
 		// Controlamos que no se salga del mapa ni pueda atravesar paredes
-		if (nuevaX >= 0 && nuevaX < nivel1[0].length && nuevaY >= 0 && nuevaY < nivel1.length
-				&& nivel1[nuevaY][nuevaX] != '#') {
+		if (nuevaX >= 0 && nuevaX < nivel[0].length && nuevaY >= 0 && nuevaY < nivel.length
+				&& nivel[nuevaY][nuevaX] != '#') {
 
 			// Controlamos condicion de victoria
-			if (nivel1[nuevaY][nuevaX] == 'S') {
+			if (nivel[nuevaY][nuevaX] == 'S') {
 				JOptionPane.showMessageDialog(null, "Has ganado !", "Game over", JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
 			}
 
 			// Ponemos a vacía la posicion antigua del jugador
-			nivel1[jugadorY][jugadorX] = ' ';
+			nivel[jugadorY][jugadorX] = ' ';
 
 			// Actualizamos las coordenadas del jugador
 			jugadorX = nuevaX;
 			jugadorY = nuevaY;
 
 			// Ahora que hemos movido al jugador actualizamos en el mapa su posición
-			nivel1[jugadorY][jugadorX] = 'J';
+			nivel[jugadorY][jugadorX] = 'J';
 			repaint();
 		}
 	}
